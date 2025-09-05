@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.simple-keyboard.hg-theme-default.onScreenKeyboard {
+  background-color: #000000;
+}
+
+.simple-keyboard.hg-layout-default .hg-button.onScreenKeyboardKey {
+  background-color: #2c2c2c;
+  color: #ffffff;
+  border: 1px solid #3c3c3c;
+  font-weight: bold;
+}
+
+.simple-keyboard.hg-layout-default .hg-button.onScreenKeyboardKey:active {
+  background-color: #3c3c3c;
+}
