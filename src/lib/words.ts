@@ -1,8 +1,5 @@
-export const WORD_LENGTH = 5;
-export const MAX_GUESSES = 6;
-
 // https://gist.github.com/slushman/34e60d6bc479ac8fc698df8c226e4264#file-wordle-list-L10
-const solutions = [
+const words = [
   "aback",
   "abase",
   "abate",
@@ -2314,6 +2311,10 @@ const solutions = [
   "zonal",
 ];
 
+export function getWords() {
+  return words;
+}
+
 export function getRandomWord() {
-  return solutions[Math.floor(Math.random() * solutions.length)];
+  return words[Math.floor(Math.random() * words.length)];
 }
