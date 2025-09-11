@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getWords, getRandomWord } from "@/lib/words";
 import OnScreenKeyboard from "@/components/OnScreenKeyboard";
 
@@ -14,41 +14,59 @@ export default function Home() {
   const [guesses, setGuesses] = useState<string[]>([]);
   const [guessStatus, setGuessStatus] = useState<GuessStatus>("guessing");
 
+  const handleKeyPress = useCallback(
+    (button: string) => {
+      if (!word) return;
+      if (guessStatus === "correct" || guessStatus === "incorrect") return; // game over
+
+      if (button === "{enter}") {
+        if (currentGuess.length !== WORD_LENGTH) {
+          setGuessStatus("invalid");
+          return;
+        }
+
+        if (!getWords().includes(currentGuess.toLowerCase())) {
+          setGuessStatus("notaword");
+          return;
+        }
+
+        if (currentGuess.toLowerCase() === word) {
+          setGuessStatus("correct");
+        } else if (guesses.length + 1 === MAX_GUESSES) {
+          setGuessStatus("incorrect");
+        } else {
+          setGuessStatus("guessing");
+        }
+
+        setGuesses((prev) => [...prev, currentGuess]);
+        setCurrentGuess("");
+      } else if (button === "{bksp}") {
+        setCurrentGuess((g) => g.slice(0, -1));
+      } else if (currentGuess.length < WORD_LENGTH) {
+        setCurrentGuess((g) => g + button.toUpperCase());
+      }
+    },
+    [word, currentGuess, guesses, guessStatus]
+  );
+
   useEffect(() => {
     setWord(getRandomWord());
   }, []);
 
-  function handleKeyPress(button: string) {
-    if (!word) return;
-    if (guessStatus === "correct" || guessStatus === "incorrect") return; // game over
-
-    if (button === "{enter}") {
-      if (currentGuess.length !== WORD_LENGTH) {
-        setGuessStatus("invalid");
-        return;
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Enter") {
+        handleKeyPress("{enter}");
+      } else if (e.key === "Backspace") {
+        handleKeyPress("{bksp}");
+      } else if (/^[a-zA-Z]$/.test(e.key)) {
+        handleKeyPress(e.key.toUpperCase());
       }
-
-      if (!getWords().includes(currentGuess.toLowerCase())) {
-        setGuessStatus("notaword");
-        return;
-      }
-
-      if (currentGuess.toLowerCase() === word) {
-        setGuessStatus("correct");
-      } else if (guesses.length + 1 === MAX_GUESSES) {
-        setGuessStatus("incorrect");
-      } else {
-        setGuessStatus("guessing");
-      }
-
-      setGuesses((prev) => [...prev, currentGuess]);
-      setCurrentGuess("");
-    } else if (button === "{bksp}") {
-      setCurrentGuess((g) => g.slice(0, -1));
-    } else if (currentGuess.length < WORD_LENGTH) {
-      setCurrentGuess((g) => g + button.toUpperCase());
     }
-  }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyPress]);
 
   function resetGame() {
     setWord(getRandomWord());
