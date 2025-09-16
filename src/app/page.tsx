@@ -9,27 +9,31 @@ const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
 
 export default function Home() {
-  const [word, setWord] = useState<string | null>(null);
-  const [currentGuess, setCurrentGuess] = useState("");
-  const [guesses, setGuesses] = useState<string[]>([]);
-  const [guessStatus, setGuessStatus] = useState<GuessStatus>("guessing");
+  const [word, setWord] = useState<string | null>(null); // Solution word
+  const [currentGuess, setCurrentGuess] = useState(""); // Current guess input
+  const [guesses, setGuesses] = useState<string[]>([]); // Submitted guesses
+  const [guessStatus, setGuessStatus] = useState<GuessStatus>("guessing"); // Information message
 
+  // Handles on-screen and physical keyboard inputs
   const handleKeyPress = useCallback(
     (button: string) => {
       if (!word) return;
       if (guessStatus === "correct" || guessStatus === "incorrect") return; // game over
 
       if (button === "{enter}") {
+        // Must be 5 letters
         if (currentGuess.length !== WORD_LENGTH) {
           setGuessStatus("invalid");
           return;
         }
 
+        // Must be a valid word
         if (!getWords().includes(currentGuess.toLowerCase())) {
           setGuessStatus("notaword");
           return;
         }
 
+        // Check if guess is correct
         if (currentGuess.toLowerCase() === word) {
           setGuessStatus("correct");
         } else if (guesses.length + 1 === MAX_GUESSES) {
@@ -38,21 +42,26 @@ export default function Home() {
           setGuessStatus("guessing");
         }
 
+        // Save guess and reset current input
         setGuesses((prev) => [...prev, currentGuess]);
         setCurrentGuess("");
       } else if (button === "{bksp}") {
+        // Remove last letter
         setCurrentGuess((g) => g.slice(0, -1));
       } else if (currentGuess.length < WORD_LENGTH) {
+        // Add letter to current guess
         setCurrentGuess((g) => g + button.toUpperCase());
       }
     },
     [word, currentGuess, guesses, guessStatus]
   );
 
+  // Initialise game with a random word
   useEffect(() => {
     setWord(getRandomWord());
   }, []);
 
+  // Listen for physical keyboard events
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Enter") {
@@ -68,6 +77,7 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyPress]);
 
+  // Reset the game and choose a new word
   function resetGame() {
     setWord(getRandomWord());
     setGuesses([]);
@@ -75,6 +85,7 @@ export default function Home() {
     setGuessStatus("guessing");
   }
 
+  // Determine the colour of a cell based on the guess and solution word
   function getCellColour(guess: string, index: number) {
     if (!word) return "border-gray-400";
     const letter = guess[index];
@@ -89,6 +100,7 @@ export default function Home() {
     return "bg-gray-500 text-white border-gray-500";
   }
 
+  // Display information message based on guess status
   function displayMessage() {
     switch (guessStatus) {
       case "correct":
@@ -109,7 +121,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex flex-col justify-evenly items-center gap-6 p-6 min-h-screen">
+    <main className="flex flex-col justify-evenly items-center gap-6 p-3 min-h-screen">
       <h1 className="text-3xl font-bold">Wordle</h1>
 
       <div className="flex flex-col gap-2">
